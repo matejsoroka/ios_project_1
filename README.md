@@ -1,2 +1,2 @@
 # ios_project_1
-Projet form curse Operating Systems
+Project form curse Operating Systems
