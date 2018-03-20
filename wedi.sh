@@ -37,11 +37,18 @@ if [ $# -gt 0 ]; then # if we have some argiment
             fi
 
         else
-            echo "Wrong input"
+            echo $1\#`date +%s` >> WEDI_RC
+            file="WEDI_RC"
+            # .+?(?=#)
+            #exec $EDITOR $1
         fi
 
     fi
 
 else
-    exec $EDITOR foo
+    if [ -f "WEDI_RC" ]; then # if WEDI_RC exist
+      echo 'Exist'
+    else
+      > WEDI_RC # create file
+    fi
 fi
