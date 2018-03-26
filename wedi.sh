@@ -1,54 +1,132 @@
 #!/bin/sh
 
-#/*
-# *	@name: Project 1 for IOS
-# *	@author: Matej Soroka <xsorok02>
-# */
+export LC_ALL=POSIX
 
-EDITOR="vim"
+if [ -z "$WEDI_RC" ]; then
+    echo "Destination to file doesn't exist"
+    exit 1
+fi
 
-if [ $# -gt 0 ]; then # if we have some argiment
+openEditor()
+{
+    if [ "$EDITOR" ]; then          # variable EDITOR is set
+        "$EDITOR" "$1"              # opens file set by argument with editor from EDITOR variable
+    else
+        if [ "$VISUAL" ]; then      # variable VISUAL is set
+            "VISUAL" "$1"           # opens file set by argument with editor from VISUAL variable
+        else                        # if neither EDITOR or VISUAL isn't set, choose vi editor
+            vi "$1"                 # opens file set by argument with vi editors
+        fi
+    fi
+    echo "$1|$(date +%Y-%m-%d)" >> $WEDI_RC # write
+}
 
-    if [ "$#" -lt 3 ]; then # if we have less than 3 arguments
+getFilesInDirectory() # directory as parameter
+{
+    dest="$1"
+    FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
+    for destination in $FILES
+    do
+        if [ "$(dirname $destination)" = "$dest" ] && [ -f "$destination" ]; then
+            basename "$destination"
+        fi
+    done
+}
 
-        if [ "$1" = "-m" ]; then # if first argument is switch for most frequent file
+getFilesInDirectoryByDate() # directory, date and before or after as parameter
+{
+    directory="$3"
+    date="$2"
+    switch="$1"
 
-            if [ "$#" -gt 1 ]; then
-                echo "Opening most frequently opened file in folder $2"
-            else
-                echo "Opening most frequently opened file in current folder"
-            fi
+    if [ "$switch" = "-b" ]; then
+        FILES=$(awk -F\| -v argument="$date" 'argument > $2 {print $1}' "$WEDI_RC" | sort | uniq)
+    else
+        FILES=$(awk -F\| -v argument="$date" 'argument <= $2 {print $1}' "$WEDI_RC" | sort | uniq)
+    fi
 
-        elif [ "$1" = "-l" ]; then # if first argument is switch for listing files in directory
+    for destination in $FILES
+    do
+        if [ "$(dirname $destination)" = "$directory" ] && [ -f "$destination" ]; then
+            basename "$destination"
+        fi
+    done
+}
 
-            if [ "$#" -gt 1 ]; then
-                echo "Printing list in folder $2"
-            else
-                echo "Printing list of files in current folder"
-                exec ls
-            fi
+runLastFileInFolder() # directory as parameter
+{
+    dest="$1"
+    FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
 
-        elif [ "$1" = "-b" -o "$1" = "-a" ]; then
+    for destination in $FILES
+    do
+        if [ "$(dirname $destination)" = "$dest" ] && [ -f "$destination" ]; then
+            openEditor $destination
+            exit 0
+        fi
+    done
+}
 
-            if [ "$#" -gt 1 ]; then
-                echo "Printing list of files before | after ..."
-            else
-                echo "Date was not set"
-            fi
+getMostEditedFile()
+{
+    dest="$1"
+    FILES=$(<$WEDI_RC cut -d'|' -f1 | sort -n | uniq -c | sort -r | awk '{$1=$1};1' | cut -d ' ' -f 2)
 
-        else
-            echo $1\#`date +%s` >> WEDI_RC
-            file="WEDI_RC"
-            # .+?(?=#)
-            #exec $EDITOR $1
+    for destination in $FILES
+    do
+        if [ "$(dirname $destination)" = "$dest" ] && [ -f "$destination" ]; then
+            openEditor $destination
+            exit 0
+        fi
+    done
+}
+
+if [ "$#" = "1" ]; then
+
+    if [ -f "$1" ]; then                # if argument is file
+
+        openEditor "$(realpath $1)"
+
+    else
+
+        if [ -d "$1" ]; then        # if argument is folder
+            runLastFileInFolder "$(realpath ./$1)"
+        fi
+
+        if [ "$1" = "-l" ]; then
+            getFilesInDirectory "$(realpath .)"
+        fi
+
+        if [ "$1" = "-m" ]; then
+            getMostEditedFile "$(realpath .)"
         fi
 
     fi
 
 else
-    if [ -f "WEDI_RC" ]; then # if WEDI_RC exist
-      echo 'Exist'
-    else
-      > WEDI_RC # create file
+    if [ "$#" = "0" ]; then # run without argument
+        runLastFileInFolder "$(realpath .)"
+    fi
+fi
+
+if [ "$#" = "2" ]; then
+
+    if [ "$1" = "-l" ] && [ -d $(realpath ./$2) ]; then # TODO: error if not directory
+        getFilesInDirectory $(realpath ./"$2")
+    fi
+
+    if [ "$1" = "-a" ] || [ "$1" = "-b" ]; then
+        getFilesInDirectoryByDate $1 $2 "$(realpath .)"
+    fi
+
+    if [ "$1" = "-m" ]; then
+        getMostEditedFile $(realpath ./"$2")
+    fi
+
+fi
+
+if [ "$#" = "3" ]; then
+    if [ "$1" = "-a" ] || [ "$1" = "-b" ]; then
+        getFilesInDirectoryByDate $1 $2 "$(realpath ./"$3")"
     fi
 fi
