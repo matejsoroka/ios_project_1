@@ -7,8 +7,8 @@ if [ -z "$WEDI_RC" ]; then
     exit 1
 fi
 
-# param -o | -p open or print file
-# param file destination
+# $1 -o|-p open or print file
+# $2 absolute destination to file
 handleDestination()
 {
 
@@ -28,6 +28,7 @@ handleDestination()
 
 }
 
+# $1 absolute destination to file
 openEditor()
 {
     if [ "$EDITOR" ]; then          # variable EDITOR is set
@@ -42,13 +43,17 @@ openEditor()
     echo "$1|$(date +%Y-%m-%d)" >> $WEDI_RC # write
 }
 
-getFilesInDirectory() # directory as parameter
+# $1 absolute destination to directory
+getFilesInDirectory()
 {
     FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
     handleDestination "-p" "$FILES" "$1"
 }
 
-getFilesInDirectoryByDate() # directory, date and before or after as parameter
+# $1 -b|-a before and after switch
+# $2 date in YYYY-MM-DD format
+# $3 absolute destination to directory
+getFilesInDirectoryByDate()
 {
 
     date="$2"
@@ -63,12 +68,14 @@ getFilesInDirectoryByDate() # directory, date and before or after as parameter
 
 }
 
-runLastFileInFolder() # directory as parameter
+# $1 absolute destination to directory
+runLastFileInFolder()
 {
     FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
     handleDestination "-o" "$FILES" "$1"
 }
 
+# $1 absolute destination to directory
 getMostEditedFile()
 {
     FILES=$(<$WEDI_RC cut -d'|' -f1 | sort -n | uniq -c | sort -r | awk '{$1=$1};1' | cut -d ' ' -f 2)
