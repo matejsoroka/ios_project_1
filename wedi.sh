@@ -43,13 +43,6 @@ openEditor()
     echo "$1|$(date +%Y-%m-%d)" >> $WEDI_RC # write
 }
 
-# $1 absolute destination to directory
-getFilesInDirectory()
-{
-    FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
-    handleDestination "-p" "$FILES" "$1"
-}
-
 # $1 -b|-a before and after switch
 # $2 date in YYYY-MM-DD format
 # $3 absolute destination to directory
@@ -66,6 +59,13 @@ getFilesInDirectoryByDate()
 
     handleDestination "-p" "$FILES" "$3"
 
+}
+
+# $1 absolute destination to directory
+getFilesInDirectory()
+{
+    FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
+    handleDestination "-p" "$FILES" "$1"
 }
 
 # $1 absolute destination to directory
@@ -88,20 +88,15 @@ if [ "$#" = "1" ]; then
 
         openEditor "$(realpath $1)"
 
+    elif [ -d "$1" ]; then        # if argument is folder
+        runLastFileInFolder "$(realpath ./$1)"
+    elif [ "$1" = "-l" ]; then
+        getFilesInDirectory "$(realpath .)"
+    elif [ "$1" = "-m" ]; then
+        getMostEditedFile "$(realpath .)"
     else
-
-        if [ -d "$1" ]; then        # if argument is folder
-            runLastFileInFolder "$(realpath ./$1)"
-        fi
-
-        if [ "$1" = "-l" ]; then
-            getFilesInDirectory "$(realpath .)"
-        fi
-
-        if [ "$1" = "-m" ]; then
-            getMostEditedFile "$(realpath .)"
-        fi
-
+        echo "Bad argument"
+        exit
     fi
 
 else
