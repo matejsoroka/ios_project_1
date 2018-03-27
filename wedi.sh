@@ -7,6 +7,27 @@ if [ -z "$WEDI_RC" ]; then
     exit 1
 fi
 
+# param -o | -p open or print file
+# param file destination
+handleDestination()
+{
+
+    FILES="$2"
+    dest="$3"
+    for destination in $FILES
+    do
+        if [ "$(dirname $destination)" = "$dest" ] && [ -f "$destination" ]; then
+            if [ "$1" = "-p" ]; then
+                basename "$destination"
+            elif [ "$1" = "-o" ]; then
+                openEditor $destination
+                exit 0
+            fi
+        fi
+    done
+
+}
+
 openEditor()
 {
     if [ "$EDITOR" ]; then          # variable EDITOR is set
@@ -23,62 +44,35 @@ openEditor()
 
 getFilesInDirectory() # directory as parameter
 {
-    dest="$1"
     FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
-    for destination in $FILES
-    do
-        if [ "$(dirname $destination)" = "$dest" ] && [ -f "$destination" ]; then
-            basename "$destination"
-        fi
-    done
+    handleDestination "-p" "$FILES" "$1"
 }
 
 getFilesInDirectoryByDate() # directory, date and before or after as parameter
 {
-    directory="$3"
-    date="$2"
-    switch="$1"
 
-    if [ "$switch" = "-b" ]; then
+    date="$2"
+
+    if [ "$1" = "-b" ]; then
         FILES=$(awk -F\| -v argument="$date" 'argument > $2 {print $1}' "$WEDI_RC" | sort | uniq)
     else
         FILES=$(awk -F\| -v argument="$date" 'argument <= $2 {print $1}' "$WEDI_RC" | sort | uniq)
     fi
 
-    for destination in $FILES
-    do
-        if [ "$(dirname $destination)" = "$directory" ] && [ -f "$destination" ]; then
-            basename "$destination"
-        fi
-    done
+    handleDestination "-p" "$FILES" "$3"
+
 }
 
 runLastFileInFolder() # directory as parameter
 {
-    dest="$1"
     FILES=$(awk -F\| '{print $1}' "$WEDI_RC" | sort | uniq) # get all unique lines
-
-    for destination in $FILES
-    do
-        if [ "$(dirname $destination)" = "$dest" ] && [ -f "$destination" ]; then
-            openEditor $destination
-            exit 0
-        fi
-    done
+    handleDestination "-o" "$FILES" "$1"
 }
 
 getMostEditedFile()
 {
-    dest="$1"
     FILES=$(<$WEDI_RC cut -d'|' -f1 | sort -n | uniq -c | sort -r | awk '{$1=$1};1' | cut -d ' ' -f 2)
-
-    for destination in $FILES
-    do
-        if [ "$(dirname $destination)" = "$dest" ] && [ -f "$destination" ]; then
-            openEditor $destination
-            exit 0
-        fi
-    done
+    handleDestination "-o" "$FILES" "$1"
 }
 
 if [ "$#" = "1" ]; then
