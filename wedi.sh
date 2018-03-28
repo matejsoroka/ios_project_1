@@ -7,9 +7,9 @@ if [ -z "$WEDI_RC" ]; then
     echo "Destination to data file doesn't exist"
     exit 1
 else
-  if [ ! -f "$WEDI_RC" ]; then
-      mkdir -p "$(dirname "$WEDI_RC")"
-      > "$WEDI_RC"
+  if [ ! -f "$WEDI_RC" ]; then          # if file at destination doesn't exist
+      mkdir -p "$(dirname "$WEDI_RC")"  # make directory for file
+      > "$WEDI_RC"                      # create file
   fi
 fi
 
