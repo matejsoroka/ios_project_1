@@ -6,7 +6,13 @@ export LC_ALL=POSIX
 if [ -z "$WEDI_RC" ]; then
     echo "Destination to data file doesn't exist"
     exit 1
+else
+  if [ ! -f "$WEDI_RC" ]; then
+      mkdir -p "$(dirname "$WEDI_RC")"
+      > "$WEDI_RC"
+  fi
 fi
+
 
 # $1 -o|-p open or print file
 # $2 absolute destination to file
