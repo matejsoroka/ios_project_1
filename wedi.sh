@@ -1,5 +1,10 @@
 #!/bin/sh
 
+#
+#   author: Matej Soroka (xsorok02)
+#   brief:  First IOS 1BIT FIT VUT Project
+#
+
 export LC_ALL=POSIX
 
 # if WEDI_RC is set
@@ -107,7 +112,10 @@ invalidArgument()
     exit 9
 }
 
-if [ "$#" = "0" ]; then # run without argument => opens last edited file from folder
+# ------------------------------------------------------------------------------
+#   Main functionality
+# ------------------------------------------------------------------------------
+if [ "$#" = "0" ]; then # without argument => opens last edited file from folder
 
     runLastFileInFolder "$(realpath .)"
 
