@@ -8,7 +8,7 @@ Create environmental variable `WEDI_RC` with absolute location to config file, F
 
 If you want to use other editor than vi, set environmental variable `EDITOR` or `VISUAL`
 
-$EDITOR > $VISUAL > vi
+`$EDITOR` > `$VISUAL` > vi
 
 `wedi FILE` edit file with editor
 
