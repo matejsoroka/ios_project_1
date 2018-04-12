@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/matejsoroka/ios_project_1.svg?branch=master)](https://travis-ci.org/matejsoroka/ios_project_1)
 
-# WEDI (Simple wrapper for editor)
+# WEDI (Simple wrapper for editor) 14/15
 
 Simple bash wrapper for text editor with automatic file selecting
 
